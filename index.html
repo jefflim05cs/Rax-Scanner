@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="author" content="Jeff Lim">
+  <meta name="description" content="Rax Scanner — scan documents with your phone camera.">
+  <meta name="theme-color" content="#000000">
+  <meta name="format-detection" content="telephone=no">
+  <title>Rax Scanner</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/views.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <main id="app">
+    <section class="screen" data-screen="camera" aria-label="Camera"></section>
+    <section class="screen" data-screen="corners" aria-label="Adjust corners" hidden></section>
+    <section class="screen" data-screen="confirm" aria-label="Preview scan" hidden></section>
+    <section class="screen" data-screen="scans" aria-label="Saved scans" hidden></section>
+    <section class="screen" data-screen="viewer" aria-label="View scan" hidden></section>
+  </main>
+
+  <div id="sheet-root"></div>
+  <div id="dialog-root"></div>
+  <div id="toast-root" aria-live="polite"></div>
+</body>
+</html>
