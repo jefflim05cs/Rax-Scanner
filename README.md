@@ -9,6 +9,7 @@ Turn your iPhone into a pocket document scanner. Take photos of receipts, notes,
 
 - **Scan documents with your camera.** Point your phone at a document and tap the shutter.
 - **Get straight scans from any angle.** Rax Scanner finds the edges of the document for you. Drag any of the 4 corners to fine-tune them; a magnifier appears so you can place each corner exactly.
+- **Clean, readable scans.** Shadows and uneven lighting are removed, the paper turns white and the text is sharpened. Choose **Enhanced**, **B&W** or **Original** for each scan.
 - **Check before you keep.** See the straightened scan, rotate it if needed, or retake the photo.
 - **Scan in bulk.** Save as many scans as you like during a session without leaving the camera.
 - **Review your scans.** Browse everything you've scanned, view each scan full-screen, rotate it, or delete the ones you don't want.
@@ -25,7 +26,7 @@ No app to install and no account needed.
 
 1. **Take a photo.** Place the document on a flat surface, fit it inside the frame and tap the shutter button.
 2. **Adjust the corners.** Check that the 4 corners sit on the corners of the document. Drag any that don't. Tap **Reset** to go back to the suggested corners. Tap **Next** when you're happy.
-3. **Check the scan.** Tap **Rotate** to turn it, **Retake** to start over, or **Corners** to adjust the corners again. Tap **Save** to keep it.
+3. **Check the scan.** Pick a look: **Enhanced** (clean white paper, colours kept), **B&W** (black text on white) or **Original** (as photographed). Tap **Rotate** to turn it, **Retake** to start over, or **Corners** to adjust the corners again. Tap **Save** to keep it.
 4. **Repeat** for as many pages as you need. The button next to the shutter shows how many scans you've saved.
 
 ## Saving your scans to Photos
