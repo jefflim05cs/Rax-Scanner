@@ -63,18 +63,69 @@ export function quadArea(points) {
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 /**
- * Size of the straightened output: the longer of each pair of opposite edges,
- * scaled down so neither side exceeds `maxSide`.
+ * Pixel size of the straightened scan.
+ *
+ * The width-to-height ratio is the document's real one, recovered from the
+ * perspective (Zhang & He, "Whiteboard scanning and image enhancement", 2007):
+ * the 4 corners of a rectangle seen by a pinhole camera determine the camera's
+ * focal length and the rectangle's true proportions. The resolution follows the
+ * longest edges as they appear in the photo, capped at `maxSide`.
+ *
+ * @param {{x,y}[]} corners     TL, TR, BR, BL in photo pixels
+ * @param {number}  imageWidth  photo size (the camera's centre is assumed at the middle)
+ * @param {number}  imageHeight
  */
-export function outputSize(corners, maxSide = Infinity) {
+export function outputSize(corners, imageWidth, imageHeight, maxSide = Infinity) {
   const [tl, tr, br, bl] = corners;
-  let width = Math.max(dist(tl, tr), dist(bl, br));
-  let height = Math.max(dist(tl, bl), dist(tr, br));
+  const top = Math.max(dist(tl, tr), dist(bl, br));
+  const side = Math.max(dist(tl, bl), dist(tr, br));
+  const ratio = aspectRatio(corners, imageWidth, imageHeight) ?? top / side;
+
+  // Keep at least the detail visible along the longest edges.
+  let width = Math.max(top, side * ratio);
+  let height = width / ratio;
   const k = Math.min(1, maxSide / Math.max(width, height));
   width = Math.max(1, Math.round(width * k));
   height = Math.max(1, Math.round(height * k));
   return { width, height };
 }
+
+/** True width ÷ height of the photographed rectangle, or null if it can't be estimated. */
+export function aspectRatio(corners, imageWidth, imageHeight) {
+  const u0 = imageWidth / 2;
+  const v0 = imageHeight / 2;
+  const longSide = Math.max(imageWidth, imageHeight);
+  const h = (p) => [p.x - u0, p.y - v0, 1];
+  const [m1, m2, m4, m3] = corners.map(h); // m1 TL, m2 TR, m3 BL, m4 BR
+
+  const k2 = dot(cross(m1, m4), m3) / dot(cross(m2, m4), m3);
+  const k3 = dot(cross(m1, m4), m2) / dot(cross(m3, m4), m2);
+  if (!Number.isFinite(k2) || !Number.isFinite(k3)) return null;
+  const n2 = m2.map((v, i) => k2 * v - m1[i]);
+  const n3 = m3.map((v, i) => k3 * v - m1[i]);
+
+  // Focal length: the estimate from the corners, averaged with a typical phone
+  // camera's (≈ 0.8 × the photo's long side), which keeps small corner errors
+  // from skewing the result. If the estimate is unusable (e.g. the page was
+  // photographed almost straight on), the typical value is used alone.
+  const typical = (0.8 * longSide) ** 2;
+  const estimate = -(n2[0] * n3[0] + n2[1] * n3[1]) / (n2[2] * n3[2]);
+  const usable = Number.isFinite(estimate) && estimate > (0.4 * longSide) ** 2 && estimate < (3 * longSide) ** 2;
+  const f2 = usable ? Math.sqrt(estimate * typical) : typical;
+
+  const w2 = n2[0] * n2[0] + n2[1] * n2[1] + f2 * n2[2] * n2[2];
+  const h2 = n3[0] * n3[0] + n3[1] * n3[1] + f2 * n3[2] * n3[2];
+  const ratio = Math.sqrt(w2 / h2);
+  if (!Number.isFinite(ratio) || ratio <= 0) return null;
+
+  // Never trust an estimate wildly different from what the photo shows.
+  const [tl, tr, br, bl] = corners;
+  const apparent = (dist(tl, tr) + dist(bl, br)) / (dist(tl, bl) + dist(tr, br));
+  return ratio / apparent > 2.5 || apparent / ratio > 2.5 ? null : ratio;
+}
+
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
 /**
  * 3x3 homography (row-major array of 9) mapping each `from[i]` onto `to[i]`.

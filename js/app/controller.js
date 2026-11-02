@@ -8,6 +8,7 @@ import { straighten } from '../core/perspective.js';
 import { detectCorners, preloadOpenCV } from '../core/edgeDetector.js';
 import { scaleToFit, rotate, canvasFromBlob, releaseCanvas } from '../core/imageOps.js';
 import { encode, fileName, FORMATS } from '../core/encoder.js';
+import { applyFilter, FILTERS } from '../core/filters.js';
 
 const DISPLAY_SIDE = 2400;  // photo copy shown on the corners screen
 const PREVIEW_SIDE = 1600;  // straightened preview on the check screen
@@ -28,6 +29,7 @@ export function createController({ ui, session, camera, exporter, leaveGuard }) 
 
     resultUrl: null,
     rotation: 0,
+    filter: 'enhanced',     // kept between scans
     processing: false,
     saving: false,
 
@@ -170,8 +172,15 @@ export function createController({ ui, session, camera, exporter, leaveGuard }) 
 
   async function updatePreview(myJob) {
     const small = scaleToFit(warpedCanvas, PREVIEW_SIDE);
-    const turned = rotate(small, get().rotation);
-    releaseCanvas(small);
+    let filtered;
+    try {
+      filtered = await applyFilter(small, get().filter);
+    } finally {
+      releaseCanvas(small);
+    }
+    if (myJob !== job) { releaseCanvas(filtered); return; }
+    const turned = rotate(filtered, get().rotation);
+    releaseCanvas(filtered);
     const blob = await encode(turned, 'jpg', 0.85);
     releaseCanvas(turned);
     if (myJob !== job) return;
@@ -187,10 +196,22 @@ export function createController({ ui, session, camera, exporter, leaveGuard }) 
 
   async function rotatePreview() {
     if (!warpedCanvas || get().processing) return;
+    await refreshPreview({ rotation: (get().rotation + 90) % 360 });
+  }
+
+  async function selectFilter(filter) {
+    if (!FILTERS.includes(filter) || filter === get().filter || get().saving) return;
+    if (!warpedCanvas) { set({ filter }); return; }
+    await refreshPreview({ filter });
+  }
+
+  async function refreshPreview(patch) {
     const myJob = ++job;
-    set({ rotation: (get().rotation + 90) % 360, processing: true });
+    set({ ...patch, processing: true });
     try {
       await updatePreview(myJob);
+    } catch {
+      if (myJob === job) ui.toast("Couldn't update the preview. Please try again.");
     } finally {
       if (myJob === job) set({ processing: false });
     }
@@ -209,7 +230,10 @@ export function createController({ ui, session, camera, exporter, leaveGuard }) 
     const myJob = ++job;
     set({ saving: true });
     try {
-      const { blob, thumb, width, height } = await finishImage(rotate(warpedCanvas, get().rotation));
+      const filtered = await applyFilter(warpedCanvas, get().filter);
+      const turned = rotate(filtered, get().rotation);
+      releaseCanvas(filtered);
+      const { blob, thumb, width, height } = await finishImage(turned);
       if (myJob !== job) return;
       session.add({ blob, thumb, width, height });
       syncScans();
@@ -370,6 +394,7 @@ export function createController({ ui, session, camera, exporter, leaveGuard }) 
     // Confirm
     adjustCorners,
     rotate: rotatePreview,
+    selectFilter: ({ filter }) => selectFilter(filter),
     save,
 
     // Scans
@@ -436,6 +461,7 @@ export function createController({ ui, session, camera, exporter, leaveGuard }) 
 
     ui.confirmScan.render({
       resultUrl: s.resultUrl,
+      filter: s.filter,
       processing: s.processing,
       saving: s.saving,
     });

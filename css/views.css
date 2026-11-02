@@ -291,6 +291,33 @@
 
 .toolrow { display: flex; gap: 4px; }
 
+/* Filter selector (segmented control) */
+.filter-bar {
+  flex: none;
+  display: flex;
+  align-self: center;
+  gap: 2px;
+  margin: 10px 16px 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+.filter-option {
+  min-width: 88px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.filter-option.is-selected {
+  background: var(--surface-3);
+  color: var(--text);
+}
+.filter-option:disabled { opacity: 1; }
+
 .bottombar--center { justify-content: space-evenly; }
 
 /* =========================================================
