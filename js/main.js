@@ -1,10 +1,20 @@
-// Rax Scanner — entry point. Creates the UI and connects it to the app layer.
-//
-// For now the UI is driven by a temporary preview controller with sample data.
-// It will be replaced by app/controller.js once core/ and services/ exist.
+// Rax Scanner — entry point. Creates every part of the app and connects them.
 
 import { createUI } from './views/index.js';
-import { startPreview } from './app/previewController.js';
+import { createController } from './app/controller.js';
+import { createScanSession } from './core/scanSession.js';
+import { createCamera } from './services/camera.js';
+import * as exporter from './services/exporter.js';
+import { createLeaveGuard } from './services/leaveGuard.js';
 
 const ui = createUI(document);
-startPreview(ui);
+
+const controller = createController({
+  ui,
+  session: createScanSession(),
+  camera: createCamera(ui.camera.videoElement),
+  exporter,
+  leaveGuard: createLeaveGuard(),
+});
+
+controller.start();

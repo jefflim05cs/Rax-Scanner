@@ -10,7 +10,7 @@
 // Intents emitted: 'adjustCorners', 'retake', 'rotate', 'save'
 
 import { icons } from './icons.js';
-import { qs, delegateActions, setSrc } from './dom.js';
+import { qs, delegateActions, setSrc, setText } from './dom.js';
 
 export function createConfirmView(root, { onIntent }) {
   root.innerHTML = `
@@ -26,7 +26,7 @@ export function createConfirmView(root, { onIntent }) {
       <img class="preview__img" alt="Scanned document">
       <div class="busy-overlay" data-ref="busy" hidden>
         <div class="spinner"></div>
-        <p>Straightening…</p>
+        <p data-ref="busyText">Straightening…</p>
       </div>
     </div>
 
@@ -41,6 +41,7 @@ export function createConfirmView(root, { onIntent }) {
 
   const img = qs(root, '.preview__img');
   const busy = qs(root, '[data-ref="busy"]');
+  const busyText = qs(root, '[data-ref="busyText"]');
   const rotateBtn = qs(root, '[data-action="rotate"]');
   const saveBtn = qs(root, '[data-action="save"]');
 
@@ -51,7 +52,8 @@ export function createConfirmView(root, { onIntent }) {
       setSrc(img, state.resultUrl);
       img.hidden = !state.resultUrl;
       const working = !!state.processing || !!state.saving;
-      busy.hidden = !state.processing;
+      busy.hidden = !working;
+      setText(busyText, state.saving ? 'Saving…' : 'Straightening…');
       rotateBtn.disabled = working || !state.resultUrl;
       saveBtn.disabled = working || !state.resultUrl;
     },

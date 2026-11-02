@@ -9,10 +9,17 @@ A mobile document scanner that runs in the browser, built for iOS Safari.
 
 Take a photo → adjust the 4 corners → check the straightened scan → save → repeat → export all scans to Photos.
 
-## Status
+## Features
 
-The UI is in place and runs with sample data (a "UI preview" badge is shown).
-Camera, edge detection, straightening and exporting are not connected yet.
+- **Camera:** live back-camera preview at the highest resolution Safari offers.
+- **Edge detection:** finds the document's 4 corners automatically with OpenCV.js
+  (loaded from jsDelivr on first use). If it can't load or finds nothing, you place the corners by hand.
+- **Corner adjustment:** drag the corners, with a magnifier for precision.
+- **Straightening:** perspective correction runs in a Web Worker, up to 3200 px on the long side.
+- **Saved scans:** kept in memory only (lost on refresh). View, rotate and delete them.
+- **Export:** JPG or PNG through the iOS share menu ("Save Images" adds them to Photos).
+  Falls back to downloads where file sharing isn't supported.
+- **Leave warning:** asks before leaving with unexported scans, where the browser allows it.
 
 ## Running
 

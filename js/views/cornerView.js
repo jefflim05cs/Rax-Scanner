@@ -7,8 +7,8 @@
 //
 // State consumed by render():
 //   {
-//     imageUrl: string|null,
-//     imageWidth: number,
+//     imageUrl: string|null,   // may be a downscaled copy of the photo
+//     imageWidth: number,      // the photo's full size, which corners refer to
 //     imageHeight: number,
 //     corners: [{x, y}, {x, y}, {x, y}, {x, y}] | null,
 //     cornersValid: boolean,    // false → outline shown in warning colour, Next disabled
@@ -194,11 +194,13 @@ export function createCornerView(root, { onIntent }) {
       loupeCanvas.height = size;
     }
 
-    // Region of the photo to magnify, in photo px, centred on the corner.
+    // Region to magnify, centred on the corner. The displayed image may be a
+    // smaller copy of the photo, so convert photo px into its own px.
     const p = corners[index];
-    const region = LOUPE_SIZE / (scale * LOUPE_ZOOM);
-    const sx = p.x - region / 2;
-    const sy = p.y - region / 2;
+    const r = img.naturalWidth / imgW;
+    const region = (LOUPE_SIZE / (scale * LOUPE_ZOOM)) * r;
+    const sx = p.x * r - region / 2;
+    const sy = p.y * r - region / 2;
 
     loupeCtx.fillStyle = '#000';
     loupeCtx.fillRect(0, 0, size, size);
